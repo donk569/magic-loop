@@ -66,6 +66,28 @@ cd magic-loop-web
 wrangler pages deploy . --project-name=magic-loop
 ```
 
+## 后台播放与音量（实测边界）
+
+| 行为 | Android Chrome | iPhone Safari |
+| --- | --- | --- |
+| 切到其他 App / 锁屏 | **通常继续**（MediaSession 提供通知栏、锁屏控制） | **立刻停**，iOS 的硬限制 |
+| 关掉标签页 / 退出浏览器 | 停 | 停 |
+| 页面自身音量 | 固定 100%（`volumechange` 会被拉回 1） | `audio.volume` 只读，恒为 100% |
+| 音量键 | 有效（改的是系统音量） | 有效，网页无法拦截 |
+
+代码里做了三件事：
+
+1. `audio.volume = 1`，并监听 `volumechange` 把页面音量拉回 1（不是系统音量）。
+2. `navigator.mediaSession` 设置标题、暂停、停止——**故意不注册 play**，保证用户想停就能停。
+3. `playsinline` + `preload="auto"`，避免移动端弹出全屏播放器。
+
+明确**没有做**、也做不到的：
+
+- **关掉网页还能继续响**：标签页销毁即音频销毁，Service Worker 没有播放音频的能力，任何网页都做不到。
+- **锁死音量键**：网页读不到按键、也控制不了系统音量。只会改自己的增益，用户按音量键照样变小。
+- 想真正"音量压不住"，只能做 Android 原生（`AudioManager` 拉满 + 监听音量变化回弹）；
+  **iOS 的 `outputVolume` 是只读的，任何合规 App 都锁不了音量键**。
+
 ## 自动播放：先说清楚会发生什么
 
 浏览器的自动播放策略不是网页能绕过的：
