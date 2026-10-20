@@ -89,6 +89,7 @@
     setLive(true);
     setStatus('正在循环播放', 'ok');
     setHint('声音会一直循环；关掉这个网页，声音就停了。');
+    setMediaSessionState('playing');
   });
 
   audio.addEventListener('waiting', function () {
@@ -109,6 +110,7 @@
     }
     setStatus('播放被暂停了', 'warn');
     setHint('浏览器或系统把播放暂停了（来电、切换音频设备等）。刷新页面可以重新开始。');
+    setMediaSessionState('paused');
   });
 
   audio.addEventListener('ended', function () {
@@ -125,6 +127,57 @@
   });
 
   audio.addEventListener('error', showFatal);
+
+  /* ------------------------------------------------------------ 音量与后台 */
+
+  // 页面侧音量固定 100%。注意：系统音量（音量键调的那个）网页无权控制，
+  // 任何网页都拦不住音量键，这里只能保证"页面自身不再衰减"。
+  audio.volume = 1;
+  audio.addEventListener('volumechange', function () {
+    if (audio.volume !== 1) {
+      audio.volume = 1;
+    }
+  });
+
+  // Media Session：让安卓在切后台/锁屏时把这段音频当"正在播放的媒体"对待，
+  // 通知栏和锁屏会出现控制项。iOS Safari 不支持在切走后继续出声。
+  function setupMediaSession() {
+    if (!('mediaSession' in navigator)) {
+      return;
+    }
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: '魔音循环',
+        artist: '魔音循环',
+        album: '循环播放'
+      });
+      // 只给暂停/停止，不给播放：用户想停就必须停得掉。
+      navigator.mediaSession.setActionHandler('pause', function () {
+        audio.pause();
+      });
+      navigator.mediaSession.setActionHandler('stop', function () {
+        audio.pause();
+        try {
+          audio.currentTime = 0;
+        } catch (error) {
+          /* 忽略 */
+        }
+      });
+    } catch (error) {
+      /* 浏览器不支持就算了，不影响播放 */
+    }
+  }
+
+  function setMediaSessionState(state) {
+    if (!('mediaSession' in navigator)) {
+      return;
+    }
+    try {
+      navigator.mediaSession.playbackState = state;
+    } catch (error) {
+      /* 忽略 */
+    }
+  }
 
   /* ------------------------------------------------------------ 自动播放 */
 
@@ -184,6 +237,7 @@
     return;
   }
 
+  setupMediaSession();
   attemptPlay(false);
 
   // 兜底：3 秒内既没出声也没报错，说明被静默拦截了
