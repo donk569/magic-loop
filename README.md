@@ -75,9 +75,10 @@ wrangler pages deploy . --project-name=magic-loop
 
 把自己的 mp3 命名为 `prank.mp3` 覆盖 `assets/prank.mp3` 即可，**不需要改任何代码**。
 
-- 当前 `assets/prank.mp3` 是脚本合成的占位音：6.86 秒、单声道、128 kbps、约 108 KB，无版权问题。
-- 替换后如果线上仍是旧声音，是浏览器/CDN 缓存，给文件名加版本号（如 `prank-v2.mp3`）并同步改
-  `index.html` 里的 `src` 最省事。
+- 当前 `assets/prank.mp3` 就是实际要用的那段录音：**15.8 秒、立体声、128 kbps、约 248 KB**
+  （由用户提供的 320 kbps 原始录音转码而来，体积压掉一半以上，移动端加载更快）。
+- 替换后如果线上仍是旧声音，是浏览器/CDN 缓存，给文件名加版本号（如 `prank-v2.mp3`）
+  并同步改 `index.html` 里的 `src` 最省事。
 - 音频体积建议控制在 1 MB 以内，移动端流量友好、加载更快。
 
 ## 实现要点
@@ -101,7 +102,7 @@ wrangler pages deploy . --project-name=magic-loop
 | 资源可达性 | `index.html` / `style.css` / `script.js` 均 200；`assets/prank.mp3` 200 + `audio/mpeg` |
 | 自动播放被拦截 | 状态栏"当前浏览器限制了自动播放"（warn 色），波形静止，`paused=true`，无 JS 报错 |
 | 自动播放放行（`--autoplay-policy=no-user-gesture-required`） | 状态"正在循环播放"（ok 色），波形运行，`paused=false`，`currentTime` 正常推进 |
-| 循环 | 12 秒后 `currentTime=4.86s`（总长 6.86s）→ 已自然回绕，且 `audio` 元素数量仍为 1 |
+| 循环 | 19 秒后 `currentTime=2.85s`（总长 15.79s）→ 已自然回绕，且 `audio` 元素数量仍为 1 |
 | 音频文件缺失 | 状态"音频加载失败"（error 色）+ 提示"找不到音频文件，或这个浏览器不支持 MP3" |
 | 控制台 | 无 error、无 pageerror、无失败请求 |
 
