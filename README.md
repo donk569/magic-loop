@@ -33,17 +33,31 @@ npx serve .
 
 > 本机有系统代理时，`curl 127.0.0.1` 会被代理拦成 502，加 `--noproxy '*'` 即可；浏览器访问本机地址不受影响。
 
-## 部署到 Cloudflare Pages
+## 部署
 
-### 方式一：控制台直接上传（最快）
+**线上地址（已部署）：<https://donk569.github.io/magic-loop/>**
 
-1. 打开 <https://dash.cloudflare.com> → Workers & Pages → Create → Pages → Upload assets
-2. 把 `magic-loop-web` 里的 **全部文件**（`index.html`、`style.css`、`script.js`、`assets/`）拖进去
-3. 部署后得到 `https://<项目名>.pages.dev`
+仓库：<https://github.com/donk569/magic-loop>（public，`main` 分支根目录即站点根目录）
 
-**要点**：`index.html` 必须在站点根目录，`assets/prank.mp3` 必须一起上传，否则页面会显示"音频加载失败"。
+### 当前使用：GitHub Pages
 
-### 方式二：命令行（wrangler）
+`main` 分支一推就自动构建发布，步骤：
+
+1. 仓库 Settings → Pages → Source 选 `Deploy from a branch`
+2. 分支 `main`、目录 `/ (root)` → Save
+3. 等 1~2 分钟，地址为 `https://<用户名>.github.io/<仓库名>/`
+
+**要点**：`index.html` 必须在仓库根目录，`assets/prank.mp3` 必须一起提交，
+否则页面会显示"音频加载失败"（这是页面自己的真实报错，不是样式坏了）。
+
+国内网络访问 `github.io` 有时不稳，如果同学打不开，可改用下面的 Cloudflare 方案。
+
+### 备选：Cloudflare Pages
+
+控制台：<https://dash.cloudflare.com> → Workers & Pages → Create → Pages → Upload assets，
+把这些文件整个拖进去，得到 `https://<项目名>.pages.dev`。
+
+命令行：
 
 ```bash
 npm i -g wrangler
@@ -51,8 +65,6 @@ wrangler login                       # 或设置 CLOUDFLARE_API_TOKEN / CLOUDFLA
 cd magic-loop-web
 wrangler pages deploy . --project-name=magic-loop
 ```
-
-首次会自动创建项目并输出 `https://magic-loop.pages.dev` 之类的地址。
 
 ## 自动播放：先说清楚会发生什么
 
@@ -95,7 +107,7 @@ wrangler pages deploy . --project-name=magic-loop
 
 ## 已验证 / 未验证
 
-**已实测（Chromium 无头，390×844 移动视口，本地 HTTP）**
+**已实测（Chromium 无头，390×844 移动视口；本地 HTTP 与线上 GitHub Pages 各跑一遍，结果一致）**
 
 | 场景 | 结果 |
 | --- | --- |
