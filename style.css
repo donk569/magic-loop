@@ -1,0 +1,238 @@
+/* 魔音循环 —— 深紫底 + 橙黄高亮，移动端优先 */
+:root {
+  --bg-top: #241046;
+  --bg-bottom: #0d0620;
+  --accent: #ffb03a;
+  --accent-deep: #ff7a2f;
+  --accent-soft: #ffd98a;
+  --text: #f6f0ff;
+  --text-dim: #b6a4e0;
+  --text-faint: #8a79b6;
+  --warn: #ffd166;
+  --danger: #ff6b8a;
+  --ok: #ffb03a;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(120% 70% at 50% 0%, var(--bg-top) 0%, rgba(36, 16, 70, 0) 70%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 78%);
+  background-color: var(--bg-bottom);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 4.5vh, 34px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-width: 460px;
+  margin: 0 auto;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 28px)
+    22px
+    calc(env(safe-area-inset-bottom, 0px) + 22px);
+  text-align: center;
+}
+
+/* 背后的橙色光晕，纯装饰 */
+.halo {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  width: min(78vw, 340px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 138, 47, 0.22) 0%, rgba(255, 138, 47, 0) 68%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(34px, 11vw, 44px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  background: linear-gradient(96deg, var(--accent-soft), var(--accent) 46%, var(--accent-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 12px 34px rgba(255, 122, 47, 0.18);
+}
+
+.tagline {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+/* ------------------------------ 波形 ------------------------------ */
+
+.wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: clamp(88px, 22vh, 132px);
+  padding: 0 2px;
+}
+
+.bar {
+  flex: 1 1 0;
+  max-width: 8px;
+  height: calc(var(--h, 40) * 1%);
+  min-height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent-soft), var(--accent) 42%, var(--accent-deep));
+  opacity: 0.32;
+  transform: scaleY(0.34);
+  transform-origin: center;
+  animation: bounce 1080ms ease-in-out infinite alternate;
+  animation-delay: var(--d, 0ms);
+  animation-play-state: paused;
+  will-change: transform, opacity;
+}
+
+/* 只有真正在播放时才有动画 */
+.wave.is-live .bar {
+  animation-play-state: running;
+  opacity: 1;
+}
+
+@keyframes bounce {
+  from {
+    transform: scaleY(0.28);
+    opacity: 0.7;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* ------------------------------ 状态 ------------------------------ */
+
+.status {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.status[data-tone="ok"] {
+  color: var(--ok);
+  border-color: rgba(255, 176, 58, 0.42);
+  background: rgba(255, 176, 58, 0.1);
+}
+
+.status[data-tone="wait"] {
+  color: var(--text-dim);
+}
+
+.status[data-tone="warn"] {
+  color: var(--warn);
+  border-color: rgba(255, 209, 102, 0.38);
+  background: rgba(255, 209, 102, 0.09);
+}
+
+.status[data-tone="error"] {
+  color: var(--danger);
+  border-color: rgba(255, 107, 138, 0.42);
+  background: rgba(255, 107, 138, 0.1);
+}
+
+.hint {
+  margin: 0;
+  max-width: 30ch;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text-faint);
+  min-height: 2.4em;
+}
+
+.foot {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  left: 0;
+  right: 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(138, 121, 182, 0.6);
+}
+
+/* ------------------------------ 适配 ------------------------------ */
+
+@media (max-height: 560px) {
+  .stage {
+    gap: 14px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+  }
+
+  .wave {
+    height: 68px;
+  }
+
+  .foot {
+    display: none;
+  }
+}
+
+/* 尊重系统"减弱动态效果"：保留波形静态外观，不做动画 */
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+    transform: scaleY(0.75);
+  }
+
+  .wave.is-live .bar {
+    transform: scaleY(1);
+  }
+}
